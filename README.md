@@ -1,5 +1,9 @@
 # MakePackage
 
+[![Total Downloads](https://poser.pugx.org/ollywarren/makepackage/downloads)](https://packagist.org/packages/ollywarren/makepackage)
+[![Latest Stable Version](https://poser.pugx.org/ollywarren/makepackage/v/stable)](https://packagist.org/packages/ollywarren/makepackage)
+[![License](https://poser.pugx.org/ollywarren/makepackage/license)](https://packagist.org/packages/ollywarren/makepackage)
+
 ### Introduction
 Implements a Artisan command to scaffold out Laravel Composer packages
 
