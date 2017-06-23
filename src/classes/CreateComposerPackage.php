@@ -190,7 +190,17 @@ _\ \ | | | (_| | | |  __/ _\ \ (_) | | | | | |  __/ |_| | | | | | | | (_| | /  _
         }
     ],
     \"require-dev\":{},
-    \"require\":{}
+    \"require\":{},
+    \"autoload\": {
+        \"psr-4\": {
+            \"{$vendor}\\{$package}\\\": \"src/\"
+        }
+    },
+    \"extra\": {
+        \"branch-alias\": {}
+    },
+    \"minimum-stability\": \"dev\",
+    \"prefer-stable\": true
 }
 		";
 		$write = $this->filesystem->put("packages/{$vendor}/{$package}/composer.json", $template);
@@ -356,7 +366,7 @@ class {$packageStrip} extends Facade {
 		$handle = json_decode($this->filesystem->read("packages/{$vendor}/{$package}/composer.json"));
 		$handle->{"require-dev"}->{"phpunit/phpunit"} = "^6.2";
 
-		//Write the changes back ot the Composer.json
+		//Write the changes back to the Composer.json
 		$update = $this->filesystem->update("packages/{$vendor}/{$package}/composer.json", json_encode($handle, JSON_PRETTY_PRINT|JSON_UNESCAPED_SLASHES));
 
 		//create phpunit.xml
