@@ -1,6 +1,9 @@
 {
     "name": "ollywarren/makepackage",
     "description": "Implements a Artisan command to scaffold out laravel composer packages",
+    "keywords": ["artisan","commands", "composer", "package"],
+    "homepage": "https://github.com/ollywarren/artisan-make-package",
+    "license": "MIT",
     "authors": [
         {
             "name": "Olly Warren",
