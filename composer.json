@@ -11,6 +11,12 @@
         }
     ],
     "require-dev":{},
-    "require":{}
+    "require":{},
+    "autoload": {
+        "psr-4": {
+            "Ollywarren\\Makepackage\\": "src/",
+            "Ollywarren\\Makepackage\\Classes": "src/classes"
+        }
+    }
 }
 		
