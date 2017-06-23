@@ -1,10 +1,11 @@
-#MakePackage
-##Artisan Command Package to Scaffold Composer Package Projects
+# MakePackage
 
-###Introduction
+## Artisan Command Package to Scaffold Composer Package Projects
+
+### Introduction
 Implements a Artisan command to scaffold out Laravel Composer packages
 
-###Installation
+### Installation
 
 1.  Composer require the package:
 
@@ -17,6 +18,6 @@ Implements a Artisan command to scaffold out Laravel Composer packages
 3.  Navigate to the project root and run ```php artisan``` to check that the ```make:package``` command is present.
 
 
-###Usage Instructions
+### Usage Instructions
 
-###License
+### License
