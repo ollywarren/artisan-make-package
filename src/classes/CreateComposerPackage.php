@@ -37,7 +37,7 @@ class CreateComposerPackage extends Command
     {
         parent::__construct();
 
-        $this->adaptor      = new Local(dirname(dirname(dirname(__DIR__))), 1, Local::SKIP_LINKS,[]);
+        $this->adaptor      = new Local(base_path(), 1, Local::SKIP_LINKS,[]);
         $this->filesystem   = new Filesystem($this->adaptor);
     }
 
