@@ -20,4 +20,4 @@ Implements a Artisan command to scaffold out Laravel Composer packages
 
 ### Usage Instructions
 
-### License
+1. Simply run ```php artisan make:package``` then follow the on screen instructions.
