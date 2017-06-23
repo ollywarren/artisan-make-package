@@ -1,0 +1,13 @@
+{
+    "name": "ollywarren/makepackage",
+    "description": "Implements a Artisan command to scaffold out laravel composer packages",
+    "authors": [
+        {
+            "name": "Olly Warren",
+            "email": "olly@ollywarren.com"
+        }
+    ],
+    "require-dev":{},
+    "require":{}
+}
+		
