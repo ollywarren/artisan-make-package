@@ -162,52 +162,60 @@ _\ \ | | | (_| | | |  __/ _\ \ (_) | | | | | |  __/ |_| | | | | | | | (_| | /  _
 	    }
     }
 
-	/**
-	 * createComposerJson
-	 *
-	 * Writes the basic composer.json file to the package project directory.
-	 *
-	 * Todo: Extract the Templates to an External File if possible?
-	 *
-	 * @param $vendor
-	 * @param $package
-	 * @param $description
-	 * @param $author
-	 *
-	 * @author  Olly Warren
-	 * @package MakePackage Artisan Command
-	 * @version 1.0
-	 */
+    /**
+     * createComposerJson
+     *
+     * Writes the basic composer.json file to the package project directory.
+     *
+     *
+     * @param $vendor
+     * @param $package
+     * @param $description
+     * @param $author
+     *
+     * @author  Olly Warren
+     * @package MakePackage Artisan Command
+     * @version 1.1
+     */
     public function createComposerJson($vendor, $package, $description, $author)
     {
-		$template = "{
-    \"name\": \"{$vendor}/{$package}\",
-    \"description\": \"{$description}\",
-    \"authors\": [
-        {
-            \"name\": \"{$author['name']}\",
-            \"email\": \"{$author['email']}\"
-        }
-    ],
-    \"require-dev\":{},
-    \"require\":{},
-    \"autoload\": {
-        \"psr-4\": {
-            \"{$vendor}\\{$package}\\\": \"src/\"
-        }
-    },
-    \"extra\": {
-        \"branch-alias\": {}
-    },
-    \"minimum-stability\": \"dev\",
-    \"prefer-stable\": true
-}
-		";
-		$write = $this->filesystem->put("packages/{$vendor}/{$package}/composer.json", $template);
+        /**
+         * @since 1.1
+         */
+        //Construct a PHP object to translate into JSON
+        $template = new \stdClass();
 
-		if($write == false) {
-			$this->error("Could not write composer.json file. Please check permissions");
-		}
+        $template->name             = $vendor.'/'.$package;
+        $template->description      = $description;
+
+        $authorObj = new \stdClass();
+        $authorObj->name = $author['name'];
+        $authorObj->email = $author['email'];
+        $template->authors          = array($authorObj);
+
+        $template->{"require-dev"}  = new \stdClass();
+        $template->require          = new \stdClass();
+        $template->autoload         = [
+            'psr-4' =>  [
+                $vendor.'\\'.$package.'\\' => 'src/'
+            ]
+        ];
+        $template->extra            = [
+            'branch-alias' => new \stdClass()
+        ];
+        $template->{"minimum-stability"}  = 'dev';
+        $template->{"prefer-stable"}      = true;
+
+
+
+        $write = $this->filesystem->put("packages/{$vendor}/{$package}/composer.json", json_encode($template, JSON_PRETTY_PRINT|JSON_UNESCAPED_SLASHES));
+
+        /**
+         * @since 1.0
+         */
+        if($write == false) {
+            $this->error("Could not write composer.json file. Please check permissions");
+        }
     }
 
 	/**
