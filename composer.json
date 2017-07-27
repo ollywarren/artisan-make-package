@@ -21,6 +21,11 @@
         "branch-alias": {}
     },
     "minimum-stability": "dev",
-    "prefer-stable": true
+    "prefer-stable": true,
+    "laravel": {
+        "providers": [
+            "Ollywarren\\Makepackage\\MakepackageServiceProvider"
+            ]
+    }
 }
 		
