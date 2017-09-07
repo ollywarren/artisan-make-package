@@ -7,7 +7,15 @@
 ### Introduction
 Implements a Artisan command to scaffold out Laravel Composer packages
 
-### Installation
+### Installation Laravel 5.5 LTS
+
+1.  Composer require the package:
+
+    ```composer require ollywarren/makepackage```
+
+The Package should auto register on the service container.
+
+### Installation Laravel 5.4
 
 1.  Composer require the package:
 
@@ -23,3 +31,6 @@ Implements a Artisan command to scaffold out Laravel Composer packages
 ### Usage Instructions
 
 1. Simply run ```php artisan make:package``` then follow the on screen instructions.
+
+
+Enjoy the ASCII Art and Make Something Awesome!
