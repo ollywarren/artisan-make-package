@@ -7,26 +7,26 @@ use Ollywarren\Makepackage\Classes\CreateComposerPackage;
 
 class MakepackageServiceProvider extends ServiceProvider
 {
-	/**
-	 * Bootstrap the application services.
-	 *
-	 * @return void
-	 */
-	public function boot()
-	{
-		if ($this->app->runningInConsole()) {
-			$this->commands([
-				CreateComposerPackage::class,
-			]);
-		}
-	}
+    /**
+     * Bootstrap the application services.
+     *
+     * @return void
+     */
+    public function boot()
+    {
+        if ($this->app->runningInConsole()) {
+            $this->commands([
+                CreateComposerPackage::class,
+            ]);
+        }
+    }
 
-	/**
-	 * Register the application services.
-	 *
-	 * @return void
-	 */
-	public function register()
-	{
-	}
+    /**
+     * Register the application services.
+     *
+     * @return void
+     */
+    public function register()
+    {
+    }
 }
