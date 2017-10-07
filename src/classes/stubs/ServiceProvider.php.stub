@@ -1,0 +1,30 @@
+<?php
+
+namespace :NAMESPACE:;
+
+use Illuminate\Support\ServiceProvider;
+
+//Add Your Own Package Classes Here!!
+
+class :PACKAGE_NAME:ServiceProvider extends ServiceProvider
+{
+    /**
+     * Bootstrap the application services.
+     *
+     * @return void
+     */
+    public function boot()
+    {
+        //
+    }
+
+    /**
+     * Register the application services.
+     *
+     * @return void
+     */
+    public function register()
+    {
+        //
+    }
+}

@@ -1,0 +1,35 @@
+{
+    "name": ":VENDOR_NAME:/:PACKAGE_NAME:",
+    "description": ":PACKAGE_DESCRIPTION:",
+    "keywords": [],
+    "homepage": "http://github.com/:VENDOR_NAME:/:PACKAGE_NAME:",
+    "license": "MIT",
+    "authors": [
+        {
+            "name": ":AUTHOR_NAME:",
+            "email": ":AUTHOR_EMAIL:"
+        }
+    ],
+    "require-dev":{},
+    "require":{
+        :REQUIREMENTS:
+    },
+    "autoload": {
+        "psr-4": {
+            ":NAMESPACE:": "src/"
+        }
+    },
+    "extra": {
+        "laravel": {
+            "providers": [
+                ":PROVIDER_NAMESPACE:"
+            ],
+
+            "facades": [
+                ":FACADE_NAMESPACE:"
+            ]
+        }
+    },
+    "minimum-stability": "dev",
+    "prefer-stable": true
+}

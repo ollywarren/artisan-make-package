@@ -5,6 +5,7 @@ namespace Ollywarren\Makepackage\Classes;
 use Illuminate\Console\Command;
 use League\Flysystem\Filesystem;
 use League\Flysystem\Adapter\Local;
+use SebastiaanLuca\StubGenerator\StubGenerator;
 
 class CreateComposerPackage extends Command
 {
@@ -23,11 +24,9 @@ class CreateComposerPackage extends Command
     protected $description = 'Create a skeleton Laravel Composer Package';
 
 
-    /**
-     * FlySystem Configuration.
-     */
     protected $adaptor;
     protected $filesystem;
+    protected $stubLocation;
 
 
     /**
@@ -39,6 +38,7 @@ class CreateComposerPackage extends Command
 
         $this->adaptor      = new Local(base_path(), 1, Local::SKIP_LINKS, []);
         $this->filesystem   = new Filesystem($this->adaptor);
+        $this->stubLocation = __DIR__ . '/stubs/';
     }
 
     /**
@@ -71,39 +71,91 @@ class CreateComposerPackage extends Command
         $vendor_name            = strtolower($this->ask('What Vendor Name do you wish to use?'));
         $package_name           = strtolower($this->ask('What is the name of the package you are creating?'));
         $package_description    = $this->ask('Please describe what your package will do');
+        $author_name            = $this->ask('What is the Author name?');
+        $author_email           = $this->ask('What is the Author email?');
+
 
         //Lets create the directory structure we need within Laravel.
-        $structure       = $this->createBaseStructure($vendor_name, $package_name, $package_description);
+        $this->createBaseStructure($vendor_name, $package_name, $package_description);
 
 
-        //Lets create the Composer.json File fro the Project. This also stops it being overwritten by this command.
-        $author_name        = $this->ask('What is the Author name?');
-        $author_email       = $this->ask('What is the Author email?');
-        $author             = ['name' => $author_name, 'email' => $author_email];
-
-        $composer_json   = $this->createComposerJson($vendor_name, $package_name, $package_description, $author);
-
-        //Service Provider
+        //Service Provider required ?
         $service_provider = $this->choice('Do you need a Laravel Service Provider for this Package?', ['1' => 'Yes', '2' =>'No'], '2');
 
-        if ($service_provider != 'No') {
-                $service_provider_file = $this->createServiceProvider($vendor_name, $package_name);
+        if ($service_provider !== 'No') {
+            $serviceProviderGenerator = new StubGenerator($this->stubLocation.'ServiceProvider.php.stub', "packages/{$vendor_name}/{$package_name}/src/{$this->sanitizeString($package_name)}ServiceProvider.php");
+            $serviceProviderGenerator->render([
+                ':NAMESPACE:'    => $this->sanitizeString($vendor_name).'\\'.$this->sanitizeString($package_name),
+                ':PACKAGE_NAME:' => $this->sanitizeString($package_name)
+            ]);
         }
 
         //Facade
         $facade = $this->choice('Do you need a Laravel Facade for this Package?', ['1' => 'Yes', '2' =>'No'], '2');
 
         if ($facade != 'No') {
-            //lets create a facade
-            $facade_file = $this->createFacade($vendor_name, $package_name);
+            //Generate a Facade
+            $facadeGenerator = new StubGenerator(
+                $this->stubLocation.'Facade.php.stub',
+                "packages/{$vendor_name}/{$package_name}/src/facades/{$this->sanitizeString($package_name)}.php"
+            );
+            $facadeGenerator->render([
+                ':NAMESPACE:'   => $this->sanitizeString($vendor_name).'\\'.$this->sanitizeString($package_name).'\Facades',
+                ':PACKAGE_NAME' => $this->sanitizeString($package_name)
+            ]);
+
         }
 
         //Testing
         $testing = $this->choice('Do you need to unit test this package?', ['1' => 'Yes', '2' =>'No'], '2');
 
         if ($testing != 'No') {
-            $testing = $this->createUnitTesting($vendor_name, $package_name);
+            //Generate phpunit.xml
+            $phpunitGenerator = new StubGenerator(
+                $this->stubLocation.'phpunit.xml.stub',
+                "packages/{$vendor_name}/{$package_name}/phpunit.xml"
+            );
+            $phpunitGenerator->render([]);
+
+            //Generate Unit Test Example
+            $unitTestGenerator = new StubGenerator(
+                $this->stubLocation.'ExampleTest.php.stub',
+                "packages/{$vendor_name}/{$package_name}/tests/ExampleTest.php"
+            );
+            $unitTestGenerator->render([]);
         }
+
+        //Generate gitignore
+        $gitignoreGenerator = new StubGenerator(
+            $this->stubLocation.'gitignore.stub',
+            "packages/{$vendor_name}/{$package_name}/.gitignore"
+        );
+        $gitignoreGenerator->render([]);
+
+        //Generate Readme
+        $readmeGenerator = new StubGenerator(
+            $this->stubLocation.'README.md.stub',
+            "packages/{$vendor_name}/{$package_name}/README.md"
+        );
+        $readmeGenerator->render([]);
+
+
+
+        // Generate the composer.json file.
+        $composerGenerator = new StubGenerator($this->stubLocation.'composer.json.stub', "packages/{$vendor_name}/{$package_name}/composer.json");
+
+        $composerGenerator->render([
+            ':AUTHOR_NAME:'         => $author_name,
+            ':AUTHOR_EMAIL:'        => $author_email,
+            ':VENDOR_NAME:'         => $vendor_name,
+            ':PACKAGE_NAME:'        => $package_name,
+            ':PACKAGE_DESCRIPTION:' => $package_description,
+            ':NAMESPACE:'           => $this->sanitizeString($vendor_name).'\\'.$this->sanitizeString($package_name),
+            ':PROVIDER_NAMESPACE:'  => ($service_provider !== 'No') ? $this->sanitizeString($vendor_name).'\\'.$this->sanitizeString($package_name).'\\'.$this->sanitizeString($package_name).'ServiceProvider' : '',
+            ':FACADE_NAMESPACE:'    => ($facade !== 'No') ? $this->sanitizeString($vendor_name).'\\'.$this->sanitizeString($package_name).'\\Facades\\'.$this->sanitizeString($package_name) : '',
+            ':REQUIREMENTS:'        => ($testing !== 'No') ? '"phpunit/phpunit":"^6.2"' : ''
+        ]);
+
 
         $this->info("
    ___                                 ___                      _      _           _                                         
@@ -141,7 +193,7 @@ _\ \ | | | (_| | | |  __/ _\ \ (_) | | | | | |  __/ |_| | | | | | | | (_| | /  _
      */
     public function createBaseStructure($vendor, $package, $description)
     {
-	    //Check if the root composer.json for the package exists.. this will tell us if the structure is already in place.
+        //Check if the root composer.json for the package exists.. this will tell us if the structure is already in place.
         $check = $this->filesystem->has("packages/{$vendor}/{$package}/composer.json");
 
         //package already exists
@@ -152,302 +204,9 @@ _\ \ | | | (_| | | |  __/ _\ \ (_) | | | | | |  __/ |_| | | | | | | | (_| | /  _
         $structure = $this->filesystem->createDir("packages/{$vendor}/{$package}/");
         $src = $this->filesystem->createDir("packages/{$vendor}/{$package}/src");
 
-        //Drops a git ignore file in to ignore the vendor directory
-        $gitignore = $this->filesystem->put("packages/{$vendor}/{$package}/.gitignore", "/vendor");
-
-        $readme = $this->filesystem->put("packages/{$vendor}/{$package}/README.md", "#{$vendor} - {$package}\n{$description}");
-
         if ($structure == false) {
                 $this->error("There was an error creating the directory structure. Please check your permissions.");
         }
-    }
-
-    /**
-     * createComposerJson
-     *
-     * Writes the basic composer.json file to the package project directory.
-     *
-     *
-     * @param $vendor
-     * @param $package
-     * @param $description
-     * @param $author
-     *
-     * @author  Olly Warren
-     * @package MakePackage Artisan Command
-     * @version 1.1
-     */
-    public function createComposerJson($vendor, $package, $description, $author)
-    {
-        /**
-         * @since 1.1
-         */
-        //Construct a PHP object to translate into JSON
-        $template = new \stdClass();
-
-        $template->name             = $vendor.'/'.$package;
-        $template->description      = $description;
-
-        $authorObj = new \stdClass();
-        $authorObj->name = $author['name'];
-        $authorObj->email = $author['email'];
-        $template->authors          = array($authorObj);
-
-        $template->{"require-dev"}  = new \stdClass();
-        $template->require          = new \stdClass();
-        $template->autoload         = [
-            'psr-4' =>  [
-                $vendor.'\\'.$package.'\\' => 'src/'
-            ]
-        ];
-        $template->extra            = [
-            'branch-alias' => new \stdClass()
-        ];
-        $template->{"minimum-stability"}  = 'dev';
-        $template->{"prefer-stable"}      = true;
-
-        $template->laravel                = [
-            'providers' => [$vendor."\\".$package."\\".$this->sanitizeString($package).'ServiceProvider'],
-        ];
-
-
-        $write = $this->filesystem->put("packages/{$vendor}/{$package}/composer.json", json_encode($template, JSON_PRETTY_PRINT|JSON_UNESCAPED_SLASHES));
-
-        /**
-         * @since 1.0
-         */
-        if ($write == false) {
-            $this->error("Could not write composer.json file. Please check permissions");
-        }
-    }
-
-    /**
-     * createServiceProvider
-     *
-     * Generates a basic service provider scaffold for a new Package project.
-     * It defaults to using the Vendor name and Package name to generate
-     * namespaces and class names. Could be overwritten manually in the code once
-     * generated.
-     *
-     * Todo: Extract the Templates to an External File if possible?
-     *
-     * @param $vendor
-     * @param $package
-     *
-     * @author  Olly Warren
-     * @package MakePackage Artisan Command
-     * @version 1.0
-     */
-    public function createServiceProvider($vendor, $package)
-    {
-        //Sanitize the Vendor Name to Construct the Namespace
-        $vendorStrip = $this->sanitizeString($vendor);
-
-        if ($vendorStrip == false) {
-            $this->error("Invalid Vendor name, exiting!");
-        }
-
-        //Sanitize the Package Name to Construct the Namespace
-        $packageStrip = $this->sanitizeString($package);
-
-        if ($packageStrip == false) {
-            $this->error("Invalid Package name, exiting!");
-        }
-
-        //Construct the namespace.
-            $namespace = $vendorStrip.'\\'.$packageStrip;
-
-        //Construct a Filename
-        $filename = $packageStrip."ServiceProvider.php";
-
-        //Define the template
-        $template = "<?php
-
-namespace {$namespace};
-
-use Illuminate\Support\ServiceProvider;
-
-//Add Your Own Package Classes Here!!
-
-class {$packageStrip}ServiceProvider extends ServiceProvider
-{
-    /**
-     * Bootstrap the application services.
-     *
-     * @return void
-     */
-    public function boot()
-    {
-        //
-    }
-
-    /**
-     * Register the application services.
-     *
-     * @return void
-     */
-    public function register()
-    {
-        //
-    }
-}";
-
-        $write = $this->filesystem->put("packages/{$vendor}/{$package}/src/{$filename}", $template);
-
-        if ($write == false) {
-            $this->error("Could not write {$filename} file. Please check permissions");
-        }
-    }
-
-
-    /**
-     * createFacade
-     *
-     * Creates a basic facade accessor and places it in the `{vendor}/{package}/src/facades` directory.
-     * Follows the convention of using the Vendor/Package to calculate Namespace and Class name.
-     *
-     * @param $vendor
-     * @param $package
-     *
-     * @author  Olly Warren
-     * @package MakePackage Artisan Command
-     * @version 1.0
-     */
-    public function createFacade($vendor, $package)
-    {
-        //Sanitize the Vendor Name to Construct the Namespace
-        $vendorStrip = $this->sanitizeString($vendor);
-        if ($vendorStrip == false) {
-            $this->error("Invalid Vendor name, exiting!");
-        }
-
-        //Sanitize the Package Name to Construct the Namespace
-        $packageStrip = $this->sanitizeString($package);
-
-        if ($packageStrip == false) {
-            $this->error("Invalid Package name, exiting!");
-        }
-
-        //Construct the namespace.
-        $namespace = $vendorStrip.'\\'.$packageStrip.'\Facades';
-
-        //Define the Template
-        $template = "<?php
-
-namespace {$namespace};
-use Illuminate\Support\Facades\Facade;
-
-class {$packageStrip} extends Facade {
-
-    /**
-     * getFacadeAccessor
-     *
-     * NOTE: MUST BE PAIRED WITH A SERVICE PROVIDER
-     * TWEAK FACADE ACCESSOR TO MATCH THE SERVICE PROVIDER REGISTRATION.
-     */
-    protected static function getFacadeAccessor()
-    {
-        return '{$packageStrip}';
-    }
-
-}";
-
-        $write = $this->filesystem->put("packages/{$vendor}/{$package}/src/facades/{$packageStrip}.php", $template);
-
-        if ($write == false) {
-            $this->error("Could not write {$packageStrip}.php facade file. Please check permissions");
-        }
-    }
-
-    /**
-     * createUnitTesting
-     *
-     * Creates the assets to enable the PHPUnit Unit testing.
-     *
-     * @param $vendor
-     * @param $package
-     *
-     * @author  Olly Warren
-     * @package MakePackage Artisan Command
-     * @version 1.0
-     */
-    public function createUnitTesting($vendor, $package)
-    {
-        //Update Composer JSON file and add in PHP unit to the Dev Dependencies
-        $handle = json_decode($this->filesystem->read("packages/{$vendor}/{$package}/composer.json"));
-        $handle->{"require-dev"}->{"phpunit/phpunit"} = "^6.2";
-
-        //Write the changes back to the Composer.json
-        $update = $this->filesystem->update("packages/{$vendor}/{$package}/composer.json", json_encode($handle, JSON_PRETTY_PRINT|JSON_UNESCAPED_SLASHES));
-
-        //create phpunit.xml
-
-        $template = '<?xml version="1.0" encoding="UTF-8"?>
-<phpunit
-        bootstrap="vendor/autoload.php"
-        backupGlobals="false"
-        backupStaticAttributes="false"
-        colors="true"
-        convertErrorsToExceptions="true"
-        convertNoticesToExceptions="true"
-        convertWarningsToExceptions="true"
-        processIsolation="false"
-        stopOnFailure="false"
-        syntaxCheck="false"
->
-    <testsuites>
-        <testsuite name="Package Test Suite">
-            <directory suffix=".php">./tests/</directory>
-        </testsuite>
-    </testsuites>
-</phpunit>
-        ';
-
-        $write = $this->filesystem->put("packages/{$vendor}/{$package}/phpunit.xml", $template);
-
-        if ($write == false) {
-            $this->error("Could not write phpunit.xml file. Please check permissions");
-        }
-
-        //create tests directory
-        $create_tests_dir = $this->filesystem->createDir("packages/{$vendor}/{$package}/tests/");
-
-        //create example test
-        $test_template = '<?php
-use PHPUnit\Framework\TestCase;
-
-class ExampleTest extends TestCase {
-
-    /**
-     * Example Test Suite
-     * @subpackage tests
-     * @version 1.0
-     */
-    public function testReturnsTrue()
-    {
-        $this->assertTrue(true);
-    }
-}
-
-        ';
-
-        $write = $this->filesystem->put("packages/{$vendor}/{$package}/tests/ExampleTest.php", $test_template);
-
-        if ($write == false) {
-            $this->error("Could not write ExampleTest.php file. Please check permissions");
-        }
-
-        $this->line("
-        /****************** IMPORTANT NOTE ********************/
-        
-        PLEASE RUN A COMPOSER UPDATE IN YOUR NEWLY CREATED 
-        PACKAGE PROJECT FILE TO INSTALL PHPUNIT
-        WE HAVE ALREADY ADDED IT TO THE COMPOSER JSON FILE!
-        
-        YOU'RE WELCOME! ;)
-        
-        /****************** -------------- ********************/
-        ");
     }
 
     /**
@@ -464,9 +223,9 @@ class ExampleTest extends TestCase {
      */
     public function sanitizeString($string)
     {
-        $sring = strtolower($string);
+        $string = strtolower($string);
         if (preg_match_all("/[a-zA-Z0-9]+/", $string, $matches) > 0) {
-            $string = str_replace( ' ', '', ucwords(implode( ' ', $matches[0])));
+            $string = str_replace(' ', '', ucwords(implode(' ', $matches[0])));
             return $string;
         }
 

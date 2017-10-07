@@ -11,7 +11,9 @@
         }
     ],
     "require-dev":{},
-    "require":{},
+    "require":{
+        "sebastiaanluca/php-stub-generator": "^0.1.1"
+    },
     "autoload": {
         "psr-4": {
             "Ollywarren\\Makepackage\\": "src/"
@@ -27,4 +29,3 @@
     "minimum-stability": "dev",
     "prefer-stable": true
 }
-		

@@ -1,0 +1,19 @@
+<?php
+
+namespace :NAMESPACE:;
+use Illuminate\Support\Facades\Facade;
+
+class :PACKAGE_NAME: extends Facade {
+
+    /**
+     * getFacadeAccessor
+     *
+     * NOTE: MUST BE PAIRED WITH A SERVICE PROVIDER
+     * TWEAK FACADE ACCESSOR TO MATCH THE SERVICE PROVIDER REGISTRATION.
+     */
+    protected static function getFacadeAccessor()
+    {
+        return ':PACKAGE_NAME:';
+    }
+
+}
