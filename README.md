@@ -13,7 +13,7 @@ Implements a Artisan command to scaffold out Laravel Composer packages
 
     ```composer require ollywarren/makepackage```
 
-The Package should auto register on the service container.
+Let Laravel 5.5 Automatic Package Discovery do its thang! 
 
 ### Installation Laravel 5.4
 
@@ -33,4 +33,8 @@ The Package should auto register on the service container.
 1. Simply run ```php artisan make:package``` then follow the on screen instructions.
 
 
-Enjoy the ASCII Art and Make Something Awesome!
+Enjoy and Make Something Awesome!
+
+### Mentions
+
+Thanks to Sebastiaan Luca <https://github.com/sebastiaanluca/php-stub-generator> for sharing his Stub Generator code now included in this package. Made this package much smaller and much easier to maintain and upgrade in the future.

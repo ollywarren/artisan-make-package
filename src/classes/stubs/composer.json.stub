@@ -16,17 +16,17 @@
     },
     "autoload": {
         "psr-4": {
-            ":NAMESPACE:": "src/"
+            ":NAMESPACE:\\": "src/"
         }
     },
     "extra": {
         "laravel": {
             "providers": [
-                ":PROVIDER_NAMESPACE:"
+                :PROVIDER_NAMESPACE:
             ],
 
             "facades": [
-                ":FACADE_NAMESPACE:"
+                :FACADE_NAMESPACE:
             ]
         }
     },

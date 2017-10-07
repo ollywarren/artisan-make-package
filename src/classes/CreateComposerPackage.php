@@ -5,7 +5,6 @@ namespace Ollywarren\Makepackage\Classes;
 use Illuminate\Console\Command;
 use League\Flysystem\Filesystem;
 use League\Flysystem\Adapter\Local;
-use SebastiaanLuca\StubGenerator\StubGenerator;
 
 class CreateComposerPackage extends Command
 {
@@ -48,23 +47,22 @@ class CreateComposerPackage extends Command
      */
     public function handle()
     {
-        $this->line("
-              _                ___           _                           
-  /\/\   __ _| | _____   _    / _ \__ _  ___| | ____ _  __ _  ___        
- /    \ / _` | |/ / _ \ (_)  / /_)/ _` |/ __| |/ / _` |/ _` |/ _ \       
-/ /\/\ \ (_| |   <  __/  _  / ___/ (_| | (__|   < (_| | (_| |  __/       
-\/    \/\__,_|_|\_\___| (_) \/    \__,_|\___|_|\_\__,_|\__, |\___|       
-                                                       |___/             
-   _        _   _                   __            __  __       _     _   
-  /_\  _ __| |_(_)___  __ _ _ __   / _\ ___ __ _ / _|/ _| ___ | | __| |  
- //_\\| '__| __| / __|/ _` | '_ \  \ \ / __/ _` | |_| |_ / _ \| |/ _` |  
-/  _  \ |  | |_| \__ \ (_| | | | | _\ \ (_| (_| |  _|  _| (_) | | (_| |  
-\_/ \_/_|   \__|_|___/\__,_|_| |_| \__/\___\__,_|_| |_|  \___/|_|\__,_|  
-                                                                         
-                                                                         
- _____ _____ _____ _____ _____ _____ _____ _____ _____ _____ _____ _____ 
-|_____|_____|_____|_____|_____|_____|_____|_____|_____|_____|_____|_____|
-                                                                                                      
+        $this->line("                         
+                                                                                                                    
+ __  __       _          ____            _                    
+|  \/  | __ _| | _____ _|  _ \ __ _  ___| | ____ _  __ _  ___ 
+| |\/| |/ _` | |/ / _ (_) |_) / _` |/ __| |/ / _` |/ _` |/ _ \
+| |  | | (_| |   <  __/_|  __/ (_| | (__|   < (_| | (_| |  __/
+|_|  |_|\__,_|_|\_\___(_)_|   \__,_|\___|_|\_\__,_|\__, |\___|
+                                                   |___/      
+    _         _   _                   ____             __  __       _     _ 
+   / \   _ __| |_(_)___  __ _ _ __   / ___|  ___ __ _ / _|/ _| ___ | | __| |
+  / _ \ | '__| __| / __|/ _` | '_ \  \___ \ / __/ _` | |_| |_ / _ \| |/ _` |
+ / ___ \| |  | |_| \__ \ (_| | | | |  ___) | (_| (_| |  _|  _| (_) | | (_| |
+/_/   \_\_|   \__|_|___/\__,_|_| |_| |____/ \___\__,_|_| |_|  \___/|_|\__,_|
+                                                                                                                                               
+ _____ _____ _____ _____ _____ _____ _____ _____ _____ _____ _____ _____ _____
+|_____|_____|_____|_____|_____|_____|_____|_____|_____|_____|_____|_____|_____|                                                                                                                                                                                                                                     
             ");
 
         //Define the Required Input for the Command
@@ -78,6 +76,11 @@ class CreateComposerPackage extends Command
         //Lets create the directory structure we need within Laravel.
         $this->createBaseStructure($vendor_name, $package_name, $package_description);
 
+        sleep(2);
+
+        $this->info('Package Directory Structure Built!');
+
+        sleep(2);
 
         //Service Provider required ?
         $service_provider = $this->choice('Do you need a Laravel Service Provider for this Package?', ['1' => 'Yes', '2' =>'No'], '2');
@@ -88,6 +91,12 @@ class CreateComposerPackage extends Command
                 ':NAMESPACE:'    => $this->sanitizeString($vendor_name).'\\'.$this->sanitizeString($package_name),
                 ':PACKAGE_NAME:' => $this->sanitizeString($package_name)
             ]);
+
+            sleep(2);
+
+            $this->info('Package Service Provider Built.');
+
+            sleep(2);
         }
 
         //Facade
@@ -100,9 +109,15 @@ class CreateComposerPackage extends Command
                 "packages/{$vendor_name}/{$package_name}/src/facades/{$this->sanitizeString($package_name)}.php"
             );
             $facadeGenerator->render([
-                ':NAMESPACE:'   => $this->sanitizeString($vendor_name).'\\'.$this->sanitizeString($package_name).'\Facades',
-                ':PACKAGE_NAME' => $this->sanitizeString($package_name)
+                ':NAMESPACE:'   => $this->sanitizeString($vendor_name).'\\'.$this->sanitizeString($package_name).'\\Facades',
+                ':PACKAGE_NAME:' => $this->sanitizeString($package_name)
             ]);
+
+            sleep(2);
+
+            $this->info('Package Facade Built!');
+
+            sleep(2);
 
         }
 
@@ -117,12 +132,24 @@ class CreateComposerPackage extends Command
             );
             $phpunitGenerator->render([]);
 
+            sleep(2);
+
+            $this->info('PHPUnit Configuration Built!');
+
+            sleep(2);
+
             //Generate Unit Test Example
             $unitTestGenerator = new StubGenerator(
                 $this->stubLocation.'ExampleTest.php.stub',
                 "packages/{$vendor_name}/{$package_name}/tests/ExampleTest.php"
             );
             $unitTestGenerator->render([]);
+
+            sleep(2);
+
+            $this->info('Example Test Suite Built!');
+
+            sleep(2);
         }
 
         //Generate gitignore
@@ -132,14 +159,26 @@ class CreateComposerPackage extends Command
         );
         $gitignoreGenerator->render([]);
 
+        sleep(2);
+
+        $this->info('Git Ignore Built!');
+
+        sleep(2);
+
         //Generate Readme
         $readmeGenerator = new StubGenerator(
             $this->stubLocation.'README.md.stub',
             "packages/{$vendor_name}/{$package_name}/README.md"
         );
-        $readmeGenerator->render([]);
+        $readmeGenerator->render([
+            ':PACKAGE_NAME:' => $this->sanitizeString($package_name)
+        ]);
 
+        sleep(2);
 
+        $this->info('Readme Built!');
+
+        sleep(2);
 
         // Generate the composer.json file.
         $composerGenerator = new StubGenerator($this->stubLocation.'composer.json.stub', "packages/{$vendor_name}/{$package_name}/composer.json");
@@ -150,26 +189,59 @@ class CreateComposerPackage extends Command
             ':VENDOR_NAME:'         => $vendor_name,
             ':PACKAGE_NAME:'        => $package_name,
             ':PACKAGE_DESCRIPTION:' => $package_description,
-            ':NAMESPACE:'           => $this->sanitizeString($vendor_name).'\\'.$this->sanitizeString($package_name),
-            ':PROVIDER_NAMESPACE:'  => ($service_provider !== 'No') ? $this->sanitizeString($vendor_name).'\\'.$this->sanitizeString($package_name).'\\'.$this->sanitizeString($package_name).'ServiceProvider' : '',
-            ':FACADE_NAMESPACE:'    => ($facade !== 'No') ? $this->sanitizeString($vendor_name).'\\'.$this->sanitizeString($package_name).'\\Facades\\'.$this->sanitizeString($package_name) : '',
+            ':NAMESPACE:'           => $this->sanitizeString($vendor_name).'\\\\'.$this->sanitizeString($package_name),
+            ':PROVIDER_NAMESPACE:'  => ($service_provider !== 'No') ? '"'.$this->sanitizeString($vendor_name).'\\\\'.$this->sanitizeString($package_name).'\\\\'.$this->sanitizeString($package_name).'ServiceProvider"' : '',
+            ':FACADE_NAMESPACE:'    => ($facade !== 'No') ? '"'.$this->sanitizeString($vendor_name).'\\\\'.$this->sanitizeString($package_name).'\\\\Facades\\\\'.$this->sanitizeString($package_name).'"' : '',
             ':REQUIREMENTS:'        => ($testing !== 'No') ? '"phpunit/phpunit":"^6.2"' : ''
         ]);
 
+        sleep(2);
+
+        $this->info('Composer JSON Built!');
+
+        sleep(2);
+
+        $this->info('Switching to New Package!');
+
+        sleep(2);
+
+        chdir("packages/{$vendor_name}/{$package_name}");
+
+        sleep(2);
+
+        $this->info('Current Directory Is: ' . getcwd());
+
+        sleep(2);
+
+        // Git Init?
+        $git = $this->choice('Do you want to initialise a Git repository for this Package?', ['1' => 'Yes', '2' => 'No']);
+
+        if ($git !== 'No') {
+            echo exec('git init');
+        }
+
+        sleep(2);
+
+        // Composer Update
+        echo exec('composer install');
+
+        sleep(2);
+
+        // Complete
 
         $this->info("
-   ___                                 ___                      _      _           _                                         
-  / _ \_ __ ___   ___ ___  ___ ___    / __\___  _ __ ___  _ __ | | ___| |_ ___  __| |                                        
- / /_)/ '__/ _ \ / __/ _ \/ __/ __|  / /  / _ \| '_ ` _ \| '_ \| |/ _ \ __/ _ \/ _` |                                        
-/ ___/| | | (_) | (_|  __/\__ \__ \ / /__| (_) | | | | | | |_) | |  __/ ||  __/ (_| |                                        
-\/    |_|  \___/ \___\___||___/___/ \____/\___/|_| |_| |_| .__/|_|\___|\__\___|\__,_|                                        
-                                                         |_|                                                                 
- __ _                      __                      _   _     _                 _                                           _ 
-/ _\ |__   __ _ _ __ ___  / _\ ___  _ __ ___   ___| |_| |__ (_)_ __   __ _    /_\__      _____  ___  ___  _ __ ___   ___  / \
-\ \| '_ \ / _` | '__/ _ \ \ \ / _ \| '_ ` _ \ / _ \ __| '_ \| | '_ \ / _` |  //_\\ \ /\ / / _ \/ __|/ _ \| '_ ` _ \ / _ \/  /
-_\ \ | | | (_| | | |  __/ _\ \ (_) | | | | | |  __/ |_| | | | | | | | (_| | /  _  \ V  V /  __/\__ \ (_) | | | | | |  __/\_/ 
-\__/_| |_|\__,_|_|  \___| \__/\___/|_| |_| |_|\___|\__|_| |_|_|_| |_|\__, | \_/ \_/\_/\_/ \___||___/\___/|_| |_| |_|\___\/   
-                                                                     |___/                                                   
+ ____                                 ____                      _      _           _   
+|  _ \ _ __ ___   ___ ___  ___ ___   / ___|___  _ __ ___  _ __ | | ___| |_ ___  __| |  
+| |_) | '__/ _ \ / __/ _ \/ __/ __| | |   / _ \| '_ ` _ \| '_ \| |/ _ \ __/ _ \/ _` |  
+|  __/| | | (_) | (_|  __/\__ \__ \ | |__| (_) | | | | | | |_) | |  __/ ||  __/ (_| |_ 
+|_|   |_|  \___/ \___\___||___/___/  \____\___/|_| |_| |_| .__/|_|\___|\__\___|\__,_(_)
+                                                         |_|                           
+ ____  _                      ____                       _   _     _                  _                                         _ 
+/ ___|| |__   __ _ _ __ ___  / ___|  ___  _ __ ___   ___| |_| |__ (_)_ __   __ _     / \__      _____  ___  ___  _ __ ___   ___| |
+\___ \| '_ \ / _` | '__/ _ \ \___ \ / _ \| '_ ` _ \ / _ \ __| '_ \| | '_ \ / _` |   / _ \ \ /\ / / _ \/ __|/ _ \| '_ ` _ \ / _ \ |
+ ___) | | | | (_| | | |  __/  ___) | (_) | | | | | |  __/ |_| | | | | | | | (_| |  / ___ \ V  V /  __/\__ \ (_) | | | | | |  __/_|
+|____/|_| |_|\__,_|_|  \___| |____/ \___/|_| |_| |_|\___|\__|_| |_|_|_| |_|\__, | /_/   \_\_/\_/ \___||___/\___/|_| |_| |_|\___(_)
+                                                                           |___/                                                                                                    
 ");
     }
 
